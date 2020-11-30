@@ -8,7 +8,7 @@ from sentry_sdk.integrations.flask import FlaskIntegration
 from resources.FeiraLivre import FeiraLivre
 
 
-from db import db
+from db import db, url_db
 import sys
 
 
@@ -18,7 +18,7 @@ import sys
 
 app = Flask(__name__)
 db.init_app(app)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///data.db'
+app.config['SQLALCHEMY_DATABASE_URI'] = url_db
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.secret_key = 'llb'
 api = Api(app)
@@ -37,7 +37,7 @@ def prepare_api():
     db.create_all()
 
 #api.add_resource(Store, '/store/<string:name>')
-api.add_resource(FeiraLivre, '/feira-livre/<string:name>')# the name is coming from get name
+api.add_resource(FeiraLivre, '/feira-livre/<string:codigo>')# the name is coming from get name
 #api.add_resource(ItemList, '/items')
 
 

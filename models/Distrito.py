@@ -7,7 +7,7 @@ class DistritoModel(db.Model):
     __tablename__ = 'Distritos'
 
 
-    id = db.Column(db.Integer, primary_key=True, auto_increment=False)
+    id = db.Column(db.Integer, primary_key=True, autoincrement=False)
     name = db.Column(db.String(100), nullable=False)
     bairros = db.relationship('BairroModel', backref='bairro', lazy='dynamic')
 

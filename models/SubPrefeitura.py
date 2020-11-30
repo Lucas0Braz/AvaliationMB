@@ -7,7 +7,7 @@ class SubPrefeituraModel(db.Model):
     __tablename__ = 'SubPrefeituras'
 
 
-    id = db.Column(db.Integer, primary_key=True, auto_increment=False)
+    id = db.Column(db.Integer, primary_key=True, autoincrement=False)
     name = db.Column(db.String(100), nullable=False)
     distrito = db.relationship('DistritoModel', backref='distr', lazy='dynamic')
 
