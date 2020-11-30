@@ -1,5 +1,12 @@
 from flask_restful import Resource, reqparse
 from models.FeiraLivreModel import FeiraLivreModel
+from models.Location import LocationModel
+from models.Regiao import RegiaoModel
+from models.SubRegiao import SubRegiaoModel
+from models.SubPrefeitura import SubPrefeituraModel
+from models.Distrito import DistritoModel
+from models.Bairro import BairroModel
+
 
 
 
@@ -18,10 +25,10 @@ class FeiraLivre(Resource):
 
     def get(self, name):
 
-        item = FeiraLivreModel.search_feira(name)
-
-        if item:
-            return item.json()
+        feira = FeiraLivreModel.search_feira(name)
+        #sub_prefeitura = BairroModel.search_bairro(name)
+        if feira:
+            return feira.json()
         return {'message': 'item not found'}, 404
 
     def post(self, name):

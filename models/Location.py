@@ -1,35 +1,33 @@
 from db import db
-
-import sys
+from models.Bairro import BairroModel
 
 
 class LocationModel(db.Model):
-    __tablename__ = 'localizacoes'
+    __tablename__ = 'Localizacoes'
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    name = db.Column(db.String(80))
-    adress = db.Column(db.String(300))
+    lat = db.Column(db.FLOAT(precision=32, decimal_return_scale=None))
+    long = db.Column(db.FLOAT(precision=32, decimal_return_scale=None))
+    setor_cens = db.Column(db.Integer(), nullable=False)
+    area_pond = db.Column(db.Integer(), nullable=False)
+    adress = db.Column(db.String(300), nullable=False)
+    numero = db.Column(db.String(10), nullable=False)
     reference = db.Column(db.String(300))
-    #feira_livre_id = db.Column(db.Integer, db.ForeignKey('FeirasLivres.cod_registro'))
-    #feira_livre = db.relationship("FeiraLivreModel", back_populates="FeirasLivres")
-    feira_livre_id = db.Column(db.String, db.ForeignKey('FeirasLivres.cod_registro'))
 
-    # when we put lazy=dynamic, isto pega o que era
-    # antes uma lista de items de cada store
-    # e transforma em um query builder
+    bairro_id = db.Column(db.Integer, db.ForeignKey('Bairros.id'), nullable=False)
 
-    def __init__(self, name):
-        self.name = name
 
-    def json(self):
-        return {'id': self.id, 'name': self.name, 'items': [item.json() for item in self.items.all()]}
+    def json_children(self):
+        ParentBairro = BairroModel.search_bairro_id(self.bairro_id).json_children()
+        return {'id': self.id, 'long': self.long,
+                'bairro': ParentBairro }
 
     @classmethod
-    def search_store(cls, name):
+    def search_location(cls, name):
         return cls.query.filter_by(name=name).first()
 
     @classmethod
-    def search_store_by_id(cls, id):
+    def search_location_by_id(cls, id):
         return cls.query.filter_by(id=id).first()
 
     def save_to_db(self):
