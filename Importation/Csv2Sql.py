@@ -37,33 +37,32 @@ def importCsv2SqliteTable(path2db, name_table, path2csv):
             df_csv = pd.read_csv(filepath_or_buffer=path2csv['pathFound'], encoding="ISO-8859-1")
 
 
-            import Importation.config_importation as ci
 
-            dict_config_importation = ci.dict_crossCsvHeader2dbHeaders
-
+            from Importation.config_importation import dict_crossCsvHeader2dbHeaders
+            dict_config_importation = dict_crossCsvHeader2dbHeaders
+            model_sql = None
             for index, row in df_csv.iterrows():
-                for value in dict_config_importation:
-                    cell = row[value['NameHeaderInCSV']]
-                    if value['expected_type'] == type(cell) or None == type(cell):
-                        if value['NameHeaderInCSV'] == 'LONG' or value['NameHeaderInCSV'] == 'LAT':
+                cell = None
+                for config in dict_config_importation:
+                    cell = row[config['NameHeaderInCSV']]
+                    if config['expected_type'] == type(cell) or None == type(cell):
+                        if config['NameHeaderInCSV'] == 'LONG' or config['NameHeaderInCSV'] == 'LAT':
                             len_latLong = len(str(cell))
                             if len_latLong != 9:
                                 cell = ''
                             else:
-                                cell = re.sub(r'(\-\d{2})(\d+)', r'\1.\2', str(cell), re.IGNORECASE)
-                        if value['NameHeaderInCSV'] == 'NUMERO':
+                                cell = re.sub(r'(\-\d{2})(\d+)', r'\1.\2', str(cell))
+                        if config['NameHeaderInCSV'] == 'NUMERO':
                            if len(str(cell)) == 0 or re.search(r'^\s+$', cell) is not None:
                                 cell = 'S/N'
-
-                        ci.RegiaoModel()
-
-
-
-
+                        if config['expected_type'] == str:
+                            cell = hf.clean_data_str(cell)
+                            if re.search(r'\b[A-Z]{2,3}\b', cell):
+                                cell = sub_shorten_word(cell)
 
 
-                    break
-                break
+                    print(cell)
+                #insert in db
 
         except Exception as e:
             dict_result['nu_sev'] = 3
@@ -88,6 +87,17 @@ def validate_csvHeaderXlines(alignment_filename):
             return False
     return True
 
+def sub_shorten_word(word, dict_shorten='default'):
+    if dict_shorten == 'default':
+        from Importation.config_importation import list_shortenWord2completeWord
+        dict_shorten = list_shortenWord2completeWord
+    for value in dict_shorten:
+        pattern_check = rf"(\b{value['shorten']}\b)"
+        check = re.search(pattern_check, word, re.IGNORECASE)
+        if check:
+            word = re.sub(pattern_check,value['complete'], word)
+            break
+    return word
 
 
 path2csv = 'DEINFO_AB_FEIRASLIVRES_2014.csv'

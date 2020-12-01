@@ -1,7 +1,7 @@
 import sys
 import re
-from flask_restful import Resource, reqparse
-
+from flask_restful import reqparse
+from flask_restful_swagger_3 import swagger, Resource
 
 from models.FeiraLivreModel import FeiraLivreModel
 from models.Location import LocationModel
@@ -16,55 +16,51 @@ from helperFuncs import clean_data_str
 
 
 class FeiraLivre(Resource):
+
     parser = reqparse.RequestParser()
-    parser.add_argument('cod_registro',
+    parser.add_argument('name_feira',
                         type=str,
                         required=True,
                         help="This field cannot be left blank"
                         )
-    parser.add_argument('name_feira',
-                        type=str,
-                        required=False,
-                        help="All Feiras must have a name"
-                        )
     parser.add_argument('latitude',
                         type=float,
-                        required=False,
-                        help="You need the latitude"
+                        required=True,
+                        help="This field cannot be left blank and must be a float"
                         )
     parser.add_argument('longitude',
                         type=float,
-                        required=False,
-                        help="Longitude will only accept floats"
+                        required=True,
+                        help="This field cannot be left blank and must be a float"
                         )
     parser.add_argument('setor_censitario',
                         type=int,
-                        required=False,
-                        help=""
+                        required=True,
+                        help="This field cannot be left blank"
                         )
     parser.add_argument('area_ponderada',
                         type=int,
-                        required=False,
+                        required=True,
                         )
     parser.add_argument('endereco',
                         type=str,
-                        required=False,
+                        required=True,
                         )
     parser.add_argument('numero',
                         type=str,
-                        required=False,
+                        required=True,
                         )
     parser.add_argument('referencia',
-                        type=int,
-                        required=False,
+                        type=str,
                         )
     parser.add_argument('bairro',
                         type=str,
                         required=True,
-                        help="Bairro is necessary for retrieving all data"
+                        help="This field cannot be left blank"
                         )
 
-
+    @swagger.tags(['feira-livre'])
+    @swagger.response(response_code=204, description='get an feira by cod_registro')
     def get(self, codigo):
 
         feira = FeiraLivreModel.search_feira_by_codigo(codigo)
@@ -73,29 +69,86 @@ class FeiraLivre(Resource):
             return feira.json()
         return {'message': f'feira with the {codigo} does not exist'}, 404
 
+    @swagger.tags(['feira-livre'])
+    @swagger.response(response_code=201, description='created feira')
+    @swagger.reqparser(name='FeiraLivreModel', parser=parser)
     def post(self, codigo):
         data = FeiraLivre.parser.parse_args()
-        if data['latitude'] > 90 or data['latitude'] < -90:
-            return {'message': 'the latitude {} must be beteween -90 and 90'.format(data['latitude'])}, 400
-        if data['longitude'] > 180 or data['longitude'] < -180:
-            return {'message': 'the longitude {} must be beteween -180 and 180'.format(data['longitude'])}, 400
+        codigo = clean_data_str(codigo)
+        fields_validations = self.__fields_validation(data, codigo)
+        if fields_validations != True:
+            return fields_validations
         if len(data['endereco']) < 1:
-            return {'message': 'the endereco {} can not be left blank'.format(data['endereco'])}, 400
-        if len(str(data['setor_censitario'])) != 15:
-            return {'message': 'the setor_censitario {} must be 15 digits'.format(data['setor_censitario'])}, 400
-        if len(str(data['area_ponderada'])) != 14:
-            return {'message': 'the area_ponderada {} must be 14 digits'.format(data['area_ponderada'])}, 400
+            return {'endereco': 'this field {} can not be left blank'.format(data['endereco'])}, 400
         if FeiraLivreModel.search_feira_by_codigo(codigo) is not None:
-            return {'message': 'the feira {} already exists'.format(codigo)}, 400
+            return {'message': 'the feira {} already exists'.format(codigo)}, 409
+        feira = self.__create_feira(data, codigo)
+        tup = ({}, 200)
+        if type(feira) == type(tup):
+
+            return feira
+
+        return feira.json(), 201
+
+    @swagger.tags(['feira-livre'])
+    @swagger.response(response_code=204, description='delete an feira by cod_registro')
+    def delete(self, codigo):
+        feira = FeiraLivreModel.search_feira_by_codigo(codigo)
+
+        if feira is None:
+            return {'message': 'feira {} does not exist'.format(codigo)}, 400
+        try:
+            feira.delete_from_db()
+        except Exception as e:
+             print(f'at deleting an feira in db, the following error show up: {repr(e)}', file=sys.stderr)
+             return {'message': 'feira {} has not been deleted'.format(codigo)}, 500
+
+        return {'message': 'feira {} deleted'.format(codigo)}, 204
+
+    @swagger.tags(['feira-livre'])
+    @swagger.response(response_code=201, description='created feira')
+    @swagger.reqparser(name='FeiraLivreModel', parser=parser)
+    def put(self, codigo):
+        data = FeiraLivre.parser.parse_args()
+        codigo = clean_data_str(codigo)
+        fields_validations = self.__fields_validation(data, codigo)
+        if fields_validations != True:
+            return fields_validations
+
+        feira = self.__create_feira(data, codigo)
+        tup = ({}, 200)
+        if type(feira) == type(tup):
+            print(f'{type(feira)} == {type(FeiraLivreModel)}', file=sys.stderr)
+            return feira
 
 
+
+        return feira.json()
+
+    def __fields_validation(self, data, codigo):
+        if len(str(data['setor_censitario'])) != 15:
+            return {'setor_censitario': 'this field {} must be an int with 15 digits'.format(data['setor_censitario'])}, 400
+        if len(str(data['area_ponderada'])) != 13:
+            return {'area_ponderada': 'the area_ponderada {} must be an int with 14 digits'.format(data['area_ponderada'])}, 400
+        if re.search(r'^[-]*\d+\.\d+$', str(data['latitude'])) is None:
+            return {'latitude': 'this field must be an float with the latitude'}, 400
+        if re.search(r'^[-]*\d+\.\d+$', str(data['longitude'])) is None:
+            return {'longitude': 'this field must be an float with the longitude'}, 400
+        if data['latitude'] > 90 or data['latitude'] < -90:
+            return {'latitude': 'must be beteween -90 and 90, not {}'.format(data['latitude'])}, 400
+        if data['longitude'] > 180 or data['longitude'] < -180:
+            return {'longitude': 'must be beteween -180 and 180, not {}'.format(data['longitude'])}, 400
+        if re.search(r'^\d+[-]{1}\d+$', codigo) is None:
+            return {'cod_registro': 'the cod_registro in the url {} must follow the pattern: "1234-6"'.format(codigo)}, 400
+
+        return True
+
+    def __create_feira(self, data, codigo):
         bairro = clean_data_str(data['bairro']).capitalize()
         bairro_model = BairroModel.search_bairro(bairro)
 
         if bairro_model is None:
             return {'message': 'the bairro {} does not exists in our data base'.format(bairro)}, 400
-
-
 
         dict_location = {'lat': data['latitude'], 'long': data['longitude'],
                          'setor_cens': data['setor_censitario'], 'area_pond': data['area_ponderada'],
@@ -106,46 +159,16 @@ class FeiraLivre(Resource):
             location_model.save_to_db()
         except Exception as e:
             print(f'at saving to db, the following error show up: {repr(e)}', file=sys.stderr)
-            return {'message': 'Something has go wrong with internal api '}, 500
+            return {'message': 'Something has go wrong with internally '}, 500
         location_id = location_model.id
 
         data['name_feira'] = clean_data_str(data['name_feira']).capitalize()
-        data['cod_registro'] = clean_data_str(data['cod_registro'])
-        if re.search(r'^\d+-\d+^$', data['cod_registro']) is None:
-            return 'the cod_registro {} must follow the pattern: "1234-6"'.format(data['cod_registro']), 400
 
-        dict_feira = {'name_feira': data['name_feira'], 'cod_registro': data['cod_registro'], 'location_id': location_id}
+        dict_feira = {'name_feira': data['name_feira'], 'cod_registro': codigo, 'location_id': location_id}
         feira = FeiraLivreModel(**dict_feira)
-
         try:
             feira.save_to_db()
         except Exception as e:
             print(f'at saving to db, the following error show up: {repr(e)}', file=sys.stderr)
             return {'message': 'Something has go wrong with internal api '}, 500
-
-        return feira.json(), 201
-
-    def delete(self, name):
-        item = FeiraLivreModel.search_item(name)
-        if item:
-            item.delete_from_db()
-        return {'message': 'item deleted'}
-
-    def put(self, name):
-        data = Item.parser.parse_args()
-
-        item = FeiraLivreModel.search_item(name)
-
-        if item is None:
-            item = FeiraLivreModel(name, **data)
-
-        else:
-            item.price = data['price']
-            item.store_id = data['store_id']
-
-        if StoreModel.search_store_by_id(data['store_id']) is None:
-            return {'message': 'the store {} does not exists'.format(data['store_id'])}, 400
-
-        item.save_to_db()
-        return item.json()
-
+        return feira

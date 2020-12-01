@@ -16,7 +16,7 @@ class LocationModel(db.Model):
 
     bairro_id = db.Column(db.Integer, db.ForeignKey('Bairros.id'), nullable=False)
 
-    def __init__(self,lat, long, setor_cens, area_pond, endereco, numero, referencia, bairro_id):
+    def __init__(self, lat, long, setor_cens, area_pond, endereco, numero, referencia, bairro_id):
         self.lat = lat
         self.long = long
         self.setor_cens = setor_cens
@@ -28,7 +28,9 @@ class LocationModel(db.Model):
 
     def json_children(self):
         ParentBairro = BairroModel.search_bairro_id(self.bairro_id).json_children()
-        return {'id': self.id, 'long': self.long,
+        return {'id': self.id, 'latitude': self.lat, 'long': self.long, 'setor_censitario': self.setor_cens,
+                'area_ponderada': self.area_pond, 'endereco': self.endereco,
+                'numero': self.numero, 'referencia': self.referencia,
                 'bairro': ParentBairro }
 
     @classmethod

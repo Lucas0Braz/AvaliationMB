@@ -68,7 +68,6 @@ def clean_data_str(value,**kwargs):
     :param value: must reccieve an str
     :return: a str without accents, double spaces and special caracter
     """
-    result = ''
     result = strip_no_unicode(value)
     result = strip_accents(result)
     return result
