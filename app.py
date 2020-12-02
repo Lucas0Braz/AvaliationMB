@@ -2,9 +2,9 @@ import sys
 from flask import Flask
 from flask_restful_swagger_3 import Api
 
+
 import sentry_sdk
 from sentry_sdk.integrations.flask import FlaskIntegration
-
 
 
 from resources.FeiraLivre import FeiraLivre
@@ -14,12 +14,14 @@ from db import db, url_db
 
 
 app = Flask(__name__)
-db.init_app(app)
 app.config['SQLALCHEMY_DATABASE_URI'] = url_db
+db.init_app(app)
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.secret_key = 'llb'
 api = Api(app,
-    contact=Contact.dict_contact
+    contact=Contact.dict_contact,
+    title='MercadoBitcoinAvaliacao',
+    version=0.1
           )
 
 

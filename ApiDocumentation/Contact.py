@@ -1,5 +1,7 @@
 dict_contact = {
-    "name": "API Support",
+    "name": "Api Mercado Bitcoin Avaliacao",
     "url": "lucasbraz430@gmail.com",
     "email": "lucasbraz430@gmail.com"
 }
+
+
