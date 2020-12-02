@@ -1,21 +1,25 @@
 import sys
-from flask import Flask
+from flask import Flask, _app_ctx_stack
 from flask_restful_swagger_3 import Api
 
 
 import sentry_sdk
 from sentry_sdk.integrations.flask import FlaskIntegration
-
+from sqlalchemy.orm import scoped_session
 
 from resources.FeiraLivre import FeiraLivre
 from resources.FeirasLivres import FeiraList
 from ApiDocumentation import Contact
-from db import db, url_db
+from db import SessionLocal, engine
+from models import Base
 
+Base.metadata.create_all(bind=engine)
 
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = url_db
-db.init_app(app)
+app.session = scoped_session(SessionLocal, scopefunc=_app_ctx_stack.__ident_func__)
+Base.session = app.session
+
+Base.query = app.session.query_property()
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.secret_key = 'llb'
 api = Api(app,
@@ -30,13 +34,6 @@ sentry_sdk.init(
     integrations=[FlaskIntegration()],
     traces_sample_rate=1.0
 )
-@app.before_first_request
-def prepare_api():
-    #db.cre
-    print('before all', file=sys.stderr)
-    path2db = app.config['SQLALCHEMY_DATABASE_URI']
-    path2csv = './DEINFO_AB_FEIRASLIVRES_2014.csv'
-    db.create_all()
 
 
 api.add_resource(FeiraLivre, '/feira-livre/<string:codigo>')

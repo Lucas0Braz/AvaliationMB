@@ -1,16 +1,18 @@
-from db import db
+from db import Base
+import sqlalchemy as db
+from sqlalchemy.orm import relationship
 from models.Regiao import RegiaoModel as regiao
 
 
 
-class SubRegiaoModel(db.Model):
+class SubRegiaoModel(Base):
     __tablename__ = 'SubRegioes'
 
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
 
-    sub_prefeituras = db.relationship('SubPrefeituraModel', backref='subpref', lazy='dynamic')
+    sub_prefeituras = relationship('SubPrefeituraModel', backref='subpref', lazy='dynamic')
 
     regiao_id = db.Column(db.Integer, db.ForeignKey('Regioes.id'), nullable=False)
 
@@ -36,9 +38,9 @@ class SubRegiaoModel(db.Model):
         return cls.query.filter_by(id=id).first()
 
     def save_to_db(self):
-        db.session.add(self)
-        db.session.commit()
+        Base.session.add(self)
+        Base.session.commit()
 
     def delete_from_db(self):
-        db.session.delete(self)
-        db.session.commit()
+        Base.session.delete(self)
+        Base.session.commit()

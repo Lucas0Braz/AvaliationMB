@@ -1,7 +1,8 @@
-from db import db
+from db import Base
+from sqlalchemy.orm import relationship
+import sqlalchemy as db
 
-
-class FeiraLivreModel(db.Model):
+class FeiraLivreModel(Base):
 
     __tablename__ = 'FeirasLivres'
 
@@ -9,7 +10,7 @@ class FeiraLivreModel(db.Model):
     cod_registro = db.Column(db.String(7), nullable=False)
     name_feira = db.Column(db.String(120), nullable=False)
     location_id = db.Column(db.String, db.ForeignKey('Localizacoes.id'), nullable=False)
-    location = db.relationship("LocationModel", uselist=False, backref="Localizacoes", cascade="all, delete")
+    location = relationship("LocationModel", uselist=False, backref="Localizacoes", cascade="all, delete")
 
     def __init__(self, name_feira, cod_registro, location_id):
         self.name_feira = name_feira
@@ -22,15 +23,16 @@ class FeiraLivreModel(db.Model):
 
     @classmethod
     def search_feira_by_codigo(cls, cod_registro):
+
         return cls.query.filter_by(cod_registro=cod_registro).first()
 
     def search_feiras_by_name(cls, name):
         return cls.query.filter(name_feira=name)
 
     def save_to_db(self):
-        db.session.add(self)
-        db.session.commit()
+        Base.session.add(self)
+        Base.session.commit()
 
     def delete_from_db(self):
-        db.session.delete(self)
-        db.session.commit()
+        Base.session.delete(self)
+        Base.session.commit()

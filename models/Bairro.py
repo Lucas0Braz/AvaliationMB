@@ -1,15 +1,17 @@
-from db import db
+import sqlalchemy as db
+from sqlalchemy.orm import relationship
+from db import Base
 from models.Distrito import DistritoModel
 
 
 
-class BairroModel(db.Model):
+class BairroModel(Base):
     __tablename__ = 'Bairros'
 
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
-    locations = db.relationship('LocationModel', backref='location', lazy='dynamic')
+    locations = relationship('LocationModel', backref='location', lazy='dynamic')
 
     distrito_id = db.Column(db.Integer, db.ForeignKey('Distritos.id'), nullable=False)
 
@@ -38,9 +40,9 @@ class BairroModel(db.Model):
         return cls.query.filter_by(id=id).first()
 
     def save_to_db(self):
-        db.session.add(self)
-        db.session.commit()
+        Base.session.add(self)
+        Base.session.commit()
 
     def delete_from_db(self):
-        db.session.delete(self)
-        db.session.commit()
+        Base.session.delete(self)
+        Base.session.commit()

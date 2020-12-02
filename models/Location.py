@@ -1,8 +1,9 @@
-from db import db
+import sqlalchemy as db
+from db import Base
 from models.Bairro import BairroModel
 
 
-class LocationModel(db.Model):
+class LocationModel(Base):
     __tablename__ = 'Localizacoes'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -42,9 +43,9 @@ class LocationModel(db.Model):
         return cls.query.filter_by(id=id).first()
 
     def save_to_db(self):
-        db.session.add(self)
-        db.session.commit()
+        Base.session.add(self)
+        Base.session.commit()
 
     def delete_from_db(self):
-        db.session.delete(self)
-        db.session.commit()
+        Base.session.delete(self)
+        Base.session.commit()
