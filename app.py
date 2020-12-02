@@ -1,4 +1,4 @@
-import sys
+
 from flask import Flask, _app_ctx_stack
 from flask_restful_swagger_3 import Api
 
@@ -16,9 +16,9 @@ from models import Base
 Base.metadata.create_all(bind=engine)
 
 app = Flask(__name__)
+#the line below will get SqlAlchemy Session and use it in the entire api, in this api we are not using Flask-SqlAlchemy
 app.session = scoped_session(SessionLocal, scopefunc=_app_ctx_stack.__ident_func__)
-Base.session = app.session
-
+Base.session = app.session#sharing session with models
 Base.query = app.session.query_property()
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.secret_key = 'llb'
@@ -38,7 +38,7 @@ sentry_sdk.init(
 
 api.add_resource(FeiraLivre, '/feira-livre/<string:codigo>')
 api.add_resource(FeiraList, '/feira-list/<string:name>')
-
+#todo bairros crud
 
 
 app.run(port=5000, debug=False)

@@ -59,6 +59,7 @@ class FeiraLivre(Resource):
                         help="This field cannot be left blank"
                         )
 
+
     @swagger.tags(['feira-livre'])
     @swagger.response(response_code=204, description='get an feira by cod_registro')
     def get(self, codigo):
@@ -89,6 +90,7 @@ class FeiraLivre(Resource):
             return feira
 
         return feira.json(), 201
+
 
     @swagger.tags(['feira-livre'])
     @swagger.response(response_code=204, description='delete an feira by cod_registro')
@@ -125,11 +127,14 @@ class FeiraLivre(Resource):
 
         return feira.json()
 
+
     def __fields_validation(self, data, codigo):
+        if len(data['name_feira']) > 120:
+            return {'name_feira': 'can only have 120 caracteres'}, 400
         if len(str(data['setor_censitario'])) != 15:
             return {'setor_censitario': 'this field {} must be an int with 15 digits'.format(data['setor_censitario'])}, 400
         if len(str(data['area_ponderada'])) != 13:
-            return {'area_ponderada': 'the area_ponderada {} must be an int with 14 digits'.format(data['area_ponderada'])}, 400
+            return {'area_ponderada': 'the area_ponderada {} must be an int with 13 digits'.format(data['area_ponderada'])}, 400
         if re.search(r'^[-]*\d+\.\d+$', str(data['latitude'])) is None:
             return {'latitude': 'this field must be an float with the latitude'}, 400
         if re.search(r'^[-]*\d+\.\d+$', str(data['longitude'])) is None:
@@ -145,7 +150,7 @@ class FeiraLivre(Resource):
 
     def __create_feira(self, data, codigo):
         bairro = clean_data_str(data['bairro']).capitalize()
-        bairro_model = BairroModel.search_bairro(bairro)
+        bairro_model = BairroModel.search_by_name(bairro)
 
         if bairro_model is None:
             return {'message': 'the bairro {} does not exists in our data base'.format(bairro)}, 400

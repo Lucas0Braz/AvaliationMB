@@ -17,8 +17,9 @@ class SubRegiaoModel(Base):
     regiao_id = db.Column(db.Integer, db.ForeignKey('Regioes.id'), nullable=False)
 
 
-    def __init__(self, id):
-        self.id = id
+    def __init__(self,name, regiao_id):
+        self.name = name
+        self.regiao_id = regiao_id
 
     def json_endpoint(self):
         return {'id': self.id, 'name': self.name,
@@ -30,17 +31,11 @@ class SubRegiaoModel(Base):
                 'regiao': f'{regiao.search_regiao_id(self.regiao_id).name}'}
 
     @classmethod
-    def search_sub_regiao(cls, name):
+    def search_by_name(cls, name):
         return cls.query.filter_by(name=name).first()
 
     @classmethod
     def search_sub_regiao_id(cls, id):
         return cls.query.filter_by(id=id).first()
 
-    def save_to_db(self):
-        Base.session.add(self)
-        Base.session.commit()
 
-    def delete_from_db(self):
-        Base.session.delete(self)
-        Base.session.commit()

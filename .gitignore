@@ -1,7 +1,8 @@
 __pycache__/
 .idea/
 dumb.csv
-data.db
 venv/
 data2.db
 log.txt
+*.db
+/Importation/*.db

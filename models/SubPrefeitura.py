@@ -16,8 +16,11 @@ class SubPrefeituraModel(Base):
     sub_regiao_id = db.Column(db.Integer, db.ForeignKey('SubRegioes.id'), nullable=False)
 
 
-    def __init__(self, id):
+    def __init__(self, id,sub_regiao_id, name):
+        self.name = name
+        self.sub_regiao_id = sub_regiao_id
         self.id = id
+
 
     def json_endpoint(self):
         ParentSub_regiao = sub_regiao.search_sub_regiao_id (self.sub_regiao_id).name
@@ -32,17 +35,10 @@ class SubPrefeituraModel(Base):
                 }
 
     @classmethod
-    def search_sub_prefeitura(cls, name):
+    def search_by_name(cls, name):
         return cls.query.filter_by(name=name).first()
 
     @classmethod
     def search_sub_prefeitura_id(cls, id):
         return cls.query.filter_by(id=id).first()
 
-    def save_to_db(self):
-        Base.session.add(self)
-        Base.session.commit()
-
-    def delete_from_db(self):
-        Base.session.delete(self)
-        Base.session.commit()

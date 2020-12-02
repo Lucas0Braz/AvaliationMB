@@ -34,11 +34,13 @@ list_shortenWord2completeWord = [
     {'shorten': 'VL', 'complete': 'Vila'},
     {'shorten': 'PQ', 'complete': 'Parque'},
     {'shorten': 'STA', 'complete': 'Santa'},
+    {'shorten': 'STO', 'complete': 'Santo'},
     {'shorten': 'JD', 'complete': 'Jardim'},
+    {'shorten': 'JD.', 'complete': 'Jardim '},
     {'shorten': 'CID', 'complete': 'Cidade'},
     {'shorten': 'ENG', 'complete': 'Engenheiro'},
+    {'shorten': 'CHAC', 'complete': 'Chacara'},
 ]
 
 
-for config in dict_crossCsvHeader2dbHeaders:
-    print(config['NameHeaderInCSV'])
+

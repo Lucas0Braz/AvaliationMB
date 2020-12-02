@@ -35,8 +35,11 @@ class LocationModel(Base):
                 'bairro': ParentBairro }
 
     @classmethod
-    def search_location(cls, name):
-        return cls.query.filter_by(name=name).first()
+    def search_by_name(cls, name):
+        return cls.query.filter_by(endereco=name).first()
+
+    def search_by_lat_long(cls, lat, long):
+        return cls.query.filter_by(lat=lat, long=long).first()
 
     @classmethod
     def search_location_by_id(cls, id):

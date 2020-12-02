@@ -11,13 +11,16 @@ class BairroModel(Base):
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
+    #todo accept name_abreviado in this coloumn and edit importation as well
+    #name_abreviado = db.Column(db.String(100), nullable=False)
     locations = relationship('LocationModel', backref='location', lazy='dynamic')
 
     distrito_id = db.Column(db.Integer, db.ForeignKey('Distritos.id'), nullable=False)
 
 
-    def __init__(self, name):
+    def __init__(self, name, distrito_id):
         self.name = name
+        self.distrito_id = distrito_id
 
     def json_endpoint(self):
         ParentDistrito = DistritoModel.search_distritos_id(self.distrito_id).name
@@ -32,7 +35,7 @@ class BairroModel(Base):
                 }
 
     @classmethod
-    def search_bairro(cls, name):
+    def search_by_name(cls, name):
         return cls.query.filter_by(name=name).first()
 
     @classmethod

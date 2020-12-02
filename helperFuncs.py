@@ -1,5 +1,5 @@
 from pathlib import Path
-import os
+import sys
 
 import os
 import re
@@ -17,7 +17,7 @@ def check_exists_file(_file, path2check=''):
         dict_result['pathFound'] = path_w10
         return dict_result
     str_path = fr'{Path().absolute()}\{str_path}'
-    print(str_path)
+    print(str_path, file=sys.stderr)
     path_w10 = Path(str_path)
     exists = os.path.exists(path_w10)
 
@@ -42,6 +42,8 @@ def strip_accents(text):
     text = text.decode("iso-8859-1")
     return str(text)
 
+def replaceSpaces2Space(text):
+    return re.sub(r'\s\s+', ' ', text)
 
 def strip_no_unicode(text):
     '''Retorna string sem caracteres unicode
@@ -70,4 +72,19 @@ def clean_data_str(value,**kwargs):
     """
     result = strip_no_unicode(value)
     result = strip_accents(result)
+    result = strip_none_empty(result)
+    result = replaceSpaces2Space(result)
     return result
+
+def isSQLite3(filename):
+    from os.path import isfile, getsize
+
+    if not isfile(filename):
+        return False
+    if getsize(filename) < 100: # SQLite database file header is 100 bytes
+        return False
+
+    with open(filename, 'rb') as fd:
+        header = fd.read(100)
+
+    return r'SQLite format 3\x00' in str(header[:16])

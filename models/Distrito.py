@@ -16,8 +16,10 @@ class DistritoModel(Base):
     sub_prefeitura_id = db.Column(db.Integer, db.ForeignKey('SubPrefeituras.id'), nullable=False)
 
 
-    def __init__(self, name):
+    def __init__(self, name,id,sub_prefeitura_id):
         self.name = name
+        self.sub_prefeitura_id = sub_prefeitura_id
+        self.id = id
 
     def json_endpoint(self):
         ParentSub_prefeitura = sub_prefeitura.search_sub_prefeitura_id(self.sub_prefeitura_id).name
@@ -32,17 +34,10 @@ class DistritoModel(Base):
                 }
 
     @classmethod
-    def search_distritos(cls, name):
+    def search_by_name(cls, name):
         return cls.query.filter_by(name=name).first()
 
     @classmethod
     def search_distritos_id(cls, id):
         return cls.query.filter_by(id=id).first()
 
-    def save_to_db(self):
-        Base.session.add(self)
-        Base.session.commit()
-
-    def delete_from_db(self):
-        Base.session.delete(self)
-        Base.session.commit()

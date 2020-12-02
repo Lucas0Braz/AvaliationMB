@@ -26,7 +26,7 @@ class FeiraLivreModel(Base):
 
         return cls.query.filter_by(cod_registro=cod_registro).first()
 
-    def search_feiras_by_name(cls, name):
+    def search_by_name(cls, name):
         return cls.query.filter(name_feira=name)
 
     def save_to_db(self):

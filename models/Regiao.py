@@ -17,17 +17,11 @@ class RegiaoModel(Base):
         return {'id': self.id, 'name': self.name, 'sub_regioes': [sub_regiao.json() for sub_regiao in self.sub_regioes.all()]}
 
     @classmethod
-    def search_regiao(cls, name):
+    def search_by_name(cls, name):
         return cls.query.filter_by(name=name).first()
 
     @classmethod
     def search_regiao_id(cls, id):
         return cls.query.filter_by(id=id).first()
 
-    def save_to_db(self):
-        Base.session.add(self)
-        Base.session.commit()
 
-    def delete_from_db(self):
-        Base.session.delete(self)
-        Base.session.commit()

@@ -1,7 +1,7 @@
 import json
 
 from tests.BaseTest import BaseCase
-
+#todo tests with unittest
 class TestFeiraModel(BaseCase):
 
     def test_successful_get(self):
@@ -18,8 +18,7 @@ class TestFeiraModel(BaseCase):
 	    "referencia": "nenhuma",
 	    "bairro": "Jururu"
         })
-        response = self.app.post('/api/auth/signup', headers={"Content-Type": "application/json"}, data=payload)
-        # When
+
         response = self.app.post('/api/auth/login', headers={"Content-Type": "application/json"}, data=payload)
 
         # Then
